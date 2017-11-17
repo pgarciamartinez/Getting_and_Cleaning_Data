@@ -13,10 +13,11 @@ Here are the data for the project:
 
 You should create one R script called run\_analysis.R that does the following.
 
-1.  Merges the training and the test sets to create one data set.
+### 1. Merges the training and the test sets to create one data set.
+
+Loading the data from the txt files downloaded:
 
 ``` r
-## Loading the data from the txt files downloaded
 activity_labels <- read.table("./UCI HAR Dataset/activity_labels.txt", 
                               sep = " ", header = FALSE)
 features <- read.table("./UCI HAR Dataset/features.txt", 
@@ -35,42 +36,47 @@ y_test <- read.table("./UCI HAR Dataset/test/y_test.txt", sep = "",
                      strip.white = TRUE,header = FALSE)
 ```
 
+Merging the training and testing datasets:
+
 ``` r
-## Merging the training and testing datasets
 X_data <- rbind(X_train, X_test)
 y_data <- rbind(y_train, y_test)
 subject_data <- rbind(subject_train, subject_test)
 
-## Removing original data from environment for clarity
+## Removing original data from environment for clarity:
 rm(X_train, X_test, y_train, y_test, subject_train, subject_test)
 ```
 
+Merging subject\_data (10299x1), X\_data (10299x561) and y\_data (10299x1) into a larger and single data frame:
+
 ``` r
-## Merging subject_data (10299x1), X_data (10299x561) 
-## and y_data (10299x1) into a larger and single data frame
 data <- cbind(subject_data, X_data, y_data)
 
 ## Removing original data from environment for clarity
 rm(subject_data, X_data, y_data)
 ```
 
+Labelling the columns. The data frame consists of: subject\_data, X\_data & y\_data (in this order)
+
 ``` r
-# Labelling the columns 
-# The data frame consists of: subject_data, X_data & y_data (in this order)
 names(data) <- c("Subject_ID", features[, 2], "Activity_ID")
 
 ## Removing features data from environment for clarity
 rm(features)
 ```
 
-1.  Extracts only the measurements on the mean and standard deviation for each measurement.
+### 2. Extracts only the measurements on the mean and standard deviation for each measurement.
+
+Search for the strings 'mean' or 'std' in the column names:
 
 ``` r
-# Search for the strings 'mean' or 'std' in the column names
 choices <- c("mean", "std")
 columns <- grepl(paste(choices, collapse = "|"), colnames(data))
+```
 
-# Manually making that the first and last elements true to select those extra columns
+Manually making that the first and last elements true to select those extra columns:
+
+``` r
 columns[1] <- TRUE
 columns[length(columns)] <- TRUE
 
@@ -81,7 +87,7 @@ specificData <- data[, columns]
 rm(choices, columns)
 ```
 
-1.  Uses descriptive activity names to name the activities in the data set
+### 3. Uses descriptive activity names to name the activities in the data set
 
 ``` r
 table(data$Activity_ID)
@@ -91,16 +97,21 @@ table(data$Activity_ID)
     ##    1    2    3    4    5    6 
     ## 1722 1544 1406 1777 1906 1944
 
+Labelling the activity labels dataset:
+
 ``` r
-# Labelling the activity labels dataset
 names(activity_labels) <- c("Activity_ID", "Activity")
 ```
 
-``` r
-# Storing the original order in a temporary column
-specificData$originalOrder <- 1:nrow(specificData)
+Storing the original order in a temporary column:
 
-# Assigning the activity labels to the activity_ID values using merge operation
+``` r
+specificData$originalOrder <- 1:nrow(specificData)
+```
+
+Assigning the activity labels to the activity\_ID values using merge operation
+
+``` r
 specificData <- merge(specificData, activity_labels, by = "Activity_ID")
 
 table(specificData$Activity_ID, specificData$Activity)
@@ -114,6 +125,8 @@ table(specificData$Activity_ID, specificData$Activity)
     ##   4      0    1777        0       0                  0                0
     ##   5      0       0     1906       0                  0                0
     ##   6   1944       0        0       0                  0                0
+
+With the temporary column created before, sort the new data as it was before. (The merge operation modified the order to match the activity\_ID)
 
 ``` r
 library(dplyr)
@@ -136,9 +149,17 @@ library(dplyr)
 specificData <- arrange(specificData, originalOrder)
 ```
 
-1.  Appropriately labels the data set with descriptive variable names.
+### 4. Appropriately labels the data set with descriptive variable names.
 
-2.  From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+``` r
+columnNames <- names(specificData)
+columnNames <- gsub("^t", "timeDomain_", columnNames)
+columnNames <- gsub("^f", "frequencyDomain_", columnNames)
+columnNames <- gsub(".Acc.", "Acceleration_", columnNames)
+columnNames <- gsub(".Gyro.", "Gyroscope_", columnNames)
+```
+
+### 5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
 
 Labelling the columns
 =====================
