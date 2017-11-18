@@ -116,4 +116,4 @@ tidy <- specificData %>%
   summarise_all(mean)
 
 # Exporting the result into a txt file called 'tidy.txt':
-write.table(tidy, "./tidy.txt", sep="\t")
+write.table(tidy, "./tidy.txt", sep="\t", row.name=FALSE)

@@ -191,5 +191,5 @@ tidy <- specificData %>%
 Exporting the result into a txt file called 'tidy.txt':
 
 ``` r
-write.table(tidy, "./tidy.txt", sep="\t")
+write.table(tidy, "./tidy.txt", sep="\t", row.name=FALSE)
 ```
