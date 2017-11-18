@@ -151,7 +151,6 @@ library(dplyr)
 specificData <- arrange(specificData, originalOrder)
 
 # Delete the temporary column "originalOrder"
-#specificData <- subset(specificData, select = -specificData$originalOrder)
 specificData[, c("originalOrder")] <- list(NULL)
 ```
 
