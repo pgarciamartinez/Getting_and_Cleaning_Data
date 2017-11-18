@@ -89,6 +89,8 @@ rm(choices, columns)
 
 ### 3. Uses descriptive activity names to name the activities in the data set
 
+Showing the distribution of activities:
+
 ``` r
 table(data$Activity_ID)
 ```
@@ -147,42 +149,48 @@ library(dplyr)
 
 ``` r
 specificData <- arrange(specificData, originalOrder)
+
+# Delete the temporary column "originalOrder"
+#specificData <- subset(specificData, select = -specificData$originalOrder)
+specificData[, c("originalOrder")] <- list(NULL)
 ```
 
 ### 4. Appropriately labels the data set with descriptive variable names.
 
+Making some substitutions of 'strings' into a new variable (columnNames), which is initialised to the contents of the previous labels.
+
 ``` r
 columnNames <- names(specificData)
+
 columnNames <- gsub("^t", "timeDomain_", columnNames)
 columnNames <- gsub("^f", "frequencyDomain_", columnNames)
-columnNames <- gsub(".Acc.", "Acceleration_", columnNames)
-columnNames <- gsub(".Gyro.", "Gyroscope_", columnNames)
+columnNames <- gsub("Acc", "Acceleration_", columnNames)
+columnNames <- gsub("Gyro", "Gyroscope_", columnNames)
+columnNames <- gsub("[()-]", "", columnNames) # Special characters need to be wrapped by []
+columnNames <- gsub("mean", "Mean_", columnNames)
+columnNames <- gsub("std", "StandardDeviation_", columnNames)
+columnNames <- gsub("Freq", "Frequency_", columnNames)
+columnNames <- gsub("Mag", "Magnitude_", columnNames)
+```
+
+Copying back the contents from columnNames into the labels of specificData:
+
+``` r
+names(specificData) <- columnNames
 ```
 
 ### 5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
 
-Labelling the columns
-=====================
+Creating the tidy dataset "tidy"
 
-names(X\_train) &lt;- features\[, 2\] names(X\_test) &lt;- features\[, 2\] names(subject\_train) &lt;- "Subject\_ID" names(subject\_test) &lt;- "Subject\_ID"
+``` r
+tidy <- specificData %>% 
+  group_by(Activity, Subject_ID) %>%
+  summarise_all(mean)
+```
 
-body\_acc\_x\_train &lt;- read.table("./UCI HAR Dataset/train/Inertial Signals/body\_acc\_x\_train.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) body\_acc\_y\_train &lt;- read.table("./UCI HAR Dataset/train/Inertial Signals/body\_acc\_y\_train.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) body\_acc\_z\_train &lt;- read.table("./UCI HAR Dataset/train/Inertial Signals/body\_acc\_z\_train.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) body\_gyro\_x\_train &lt;- read.table("./UCI HAR Dataset/train/Inertial Signals/body\_gyro\_x\_train.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) body\_gyro\_y\_train &lt;- read.table("./UCI HAR Dataset/train/Inertial Signals/body\_gyro\_y\_train.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) body\_gyro\_z\_train &lt;- read.table("./UCI HAR Dataset/train/Inertial Signals/body\_gyro\_z\_train.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) total\_acc\_x\_train &lt;- read.table("./UCI HAR Dataset/train/Inertial Signals/total\_acc\_x\_train.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) total\_acc\_y\_train &lt;- read.table("./UCI HAR Dataset/train/Inertial Signals/total\_acc\_y\_train.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) total\_acc\_z\_train &lt;- read.table("./UCI HAR Dataset/train/Inertial Signals/total\_acc\_z\_train.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) body\_acc\_x\_test &lt;- read.table("./UCI HAR Dataset/test/Inertial Signals/body\_acc\_x\_test.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) body\_acc\_y\_test &lt;- read.table("./UCI HAR Dataset/test/Inertial Signals/body\_acc\_y\_test.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) body\_acc\_z\_test &lt;- read.table("./UCI HAR Dataset/test/Inertial Signals/body\_acc\_z\_test.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) body\_gyro\_x\_test &lt;- read.table("./UCI HAR Dataset/test/Inertial Signals/body\_gyro\_x\_test.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) body\_gyro\_y\_test &lt;- read.table("./UCI HAR Dataset/test/Inertial Signals/body\_gyro\_y\_test.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) body\_gyro\_z\_test &lt;- read.table("./UCI HAR Dataset/test/Inertial Signals/body\_gyro\_z\_test.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) total\_acc\_x\_test &lt;- read.table("./UCI HAR Dataset/test/Inertial Signals/total\_acc\_x\_test.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) total\_acc\_y\_test &lt;- read.table("./UCI HAR Dataset/test/Inertial Signals/total\_acc\_y\_test.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE) total\_acc\_z\_test &lt;- read.table("./UCI HAR Dataset/test/Inertial Signals/total\_acc\_z\_test.txt", sep = "", strip.white = TRUE,header = FALSE, stringsAsFactors = FALSE)
+Exporting the result into a txt file called 'tidy.txt':
 
-Labelling the columns
-=====================
-
-names(activity\_labels) &lt;- c("Activity\_ID", "Activity") names(features) &lt;- c("Feature\_ID", "Features") names(subject\_train) &lt;- "Subject\_ID" names(subject\_test) &lt;- "Subject\_ID" names(X\_train) &lt;- "Value" names(y\_train) &lt;- "Labels" names(X\_test) &lt;- "Value" names(y\_test) &lt;- "Labels" names(body\_acc\_x\_train) &lt;- "body\_acc\_x" names(body\_acc\_y\_train) &lt;- "body\_acc\_y" names(body\_acc\_z\_train) &lt;- "body\_acc\_z" names(body\_acc\_x\_test) &lt;- "body\_acc\_x" names(body\_acc\_y\_test) &lt;- "body\_acc\_y" names(body\_acc\_z\_test) &lt;- "body\_acc\_z" names(body\_gyro\_x\_train) &lt;- "body\_gyro\_x" names(body\_gyro\_y\_train) &lt;- "body\_gyro\_y" names(body\_gyro\_z\_train) &lt;- "body\_gyro\_z" names(body\_gyro\_x\_test) &lt;- "body\_gyro\_x" names(body\_gyro\_y\_test) &lt;- "body\_gyro\_y" names(body\_gyro\_z\_test) &lt;- "body\_gyro\_z" names(total\_acc\_x\_train) &lt;- "total\_acc\_x" names(total\_acc\_y\_train) &lt;- "total\_acc\_y" names(total\_acc\_z\_train) &lt;- "total\_acc\_z" names(total\_acc\_x\_test) &lt;- "total\_acc\_x" names(total\_acc\_y\_test) &lt;- "total\_acc\_y" names(total\_acc\_z\_test) &lt;- "total\_acc\_z"
-
-X\_train &lt;- gsub(X\_train\[1\], " ", "")
-===========================================
-
-summary(X\_test)
-================
-
-X\_test &lt;- read.table("./UCI HAR Dataset/test/X\_test.txt", sep = "", strip.white = TRUE, header = FALSE, stringsAsFactors = TRUE) names(X\_test) &lt;- "Value" X\_test*V**a**l**u**e* &lt; −*a**s*.*n**u**m**e**r**i**c*(*a**s*.*c**h**a**r**a**c**t**e**r*(*X*<sub>*t*</sub>*e**s**t*Value))
-
-Creating data frames
-====================
-
-training &lt;- data.frame(Value = as.numeric(X\_train))
-=======================================================
+``` r
+write.table(tidy, "./tidy.txt", sep="\t")
+```
